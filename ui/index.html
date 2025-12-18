@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PortKiller Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --glass-bg: rgba(20, 25, 35, 0.45);
+            --sidebar-bg: rgba(255, 255, 255, 0.03);
+            --border-white: rgba(255, 255, 255, 0.08);
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --green: #10b981;
+            --red: #f43f5e;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: transparent;
+            color: var(--text-main);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .app-window {
+            width: 100%;
+            height: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px) saturate(160%);
+            -webkit-backdrop-filter: blur(40px) saturate(160%);
+            border: 1px solid var(--border-white);
+            display: flex;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .text-protection {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.15);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .sidebar {
+            width: 240px;
+            min-width: 240px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-white);
+            display: flex;
+            flex-direction: column;
+            padding: 12px 0;
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 64px;
+                min-width: 64px;
+            }
+
+            .nav-item span,
+            .nav-item .nav-text,
+            .nav-label,
+            .sidebar-footer-text {
+                display: none;
+            }
+
+            .nav-item {
+                justify-content: center;
+                padding: 10px 0;
+            }
+
+            .nav-item i {
+                margin-right: 0;
+                font-size: 18px;
+            }
+
+            .title-controls {
+                flex-direction: column;
+                padding: 12px 0;
+                align-items: center;
+            }
+
+            .linux-btn {
+                margin-right: 0;
+                margin-bottom: 6px;
+            }
+        }
+
+        .title-controls {
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            -webkit-app-region: drag;
+        }
+
+        .linux-btn {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            margin-right: 4px;
+            font-size: 11px;
+            color: var(--text-dim);
+            transition: 0.2s;
+            cursor: pointer;
+            -webkit-app-region: no-drag;
+        }
+
+        .linux-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .linux-btn.close:hover {
+            background: #e81123;
+            color: #fff;
+        }
+
+        .nav-item {
+            padding: 10px 14px;
+            margin: 2px 12px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item i {
+            width: 22px;
+            font-size: 15px;
+            margin-right: 12px;
+            color: var(--accent);
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            z-index: 5;
+            min-width: 0;
+        }
+
+        header {
+            height: 64px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            -webkit-app-region: drag;
+            border-bottom: 1px solid var(--border-white);
+            gap: 12px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 320px;
+            -webkit-app-region: no-drag;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-white);
+            border-radius: 10px;
+            padding: 8px 12px 8px 38px;
+            font-size: 13px;
+            color: #fff;
+            outline: none;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+
+        .table-wrap {
+            flex: 1;
+            overflow: auto;
+            padding: 16px 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+
+        th {
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-white);
+            position: sticky;
+            top: 0;
+            background: rgba(20, 25, 35, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 20;
+        }
+
+        td {
+            padding: 14px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #111827;
+            border: 1px solid var(--border-white);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 480px;
+            padding: 36px;
+            box-shadow: 0 4px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .action-icon {
+            padding: 8px;
+            border-radius: 6px;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: 0.2s;
+            -webkit-app-region: no-drag;
+        }
+
+        .action-icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .action-icon.loading i {
+            animation: spin 1s linear infinite;
+            color: var(--accent);
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn-install {
+            background: var(--accent);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            width: 100%;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-install:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="text-protection" id="protection-layer"></div>
+    <div class="app-window" id="app-window">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="title-controls">
+                <div class="linux-btn close" title="Close" id="win-close"><i class="fa-solid fa-xmark"></i></div>
+                <div class="linux-btn" title="Minimize" id="win-min"><i class="fa-solid fa-minus"></i></div>
+                <div class="linux-btn" title="Maximize" id="win-max"><i class="fa-solid fa-expand"></i></div>
+            </div>
+
+            <nav class="mt-8 flex-1 overflow-y-auto">
+                <p class="nav-label px-7 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Monitor
+                </p>
+                <div class="nav-item active" onclick="setFilter('all', this)">
+                    <i class="fa-solid fa-gauge-high"></i> <span class="nav-text">All Ports</span>
+                </div>
+                <div class="nav-item" onclick="setFilter('favorites', this)">
+                    <i class="fa-solid fa-star"></i> <span class="nav-text">Favorites</span>
+                </div>
+
+                <p class="nav-label px-7 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 mt-8">
+                    Categories</p>
+                <div class="nav-item" onclick="setFilter('web', this)"><i class="fa-solid fa-globe"></i> <span
+                        class="nav-text">Web Apps</span></div>
+                <div class="nav-item" onclick="setFilter('database', this)"><i class="fa-solid fa-database"></i> <span
+                        class="nav-text">Databases</span></div>
+                <div class="nav-item" onclick="setFilter('system', this)"><i class="fa-solid fa-microchip"></i> <span
+                        class="nav-text">System</span></div>
+            </nav>
+
+            <div class="mt-auto px-6 py-4 flex items-center space-x-3 text-slate-500 text-xs">
+                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                <span class="sidebar-footer-text" id="status-text">Service Engine Live</span>
+            </div>
+        </aside>
+
+        <!-- Main Body -->
+        <main class="content main">
+            <header>
+                <div class="flex items-center space-x-3 min-w-max">
+                    <h1 class="text-lg font-semibold tracking-tight">PortKiller</h1>
+                    <button id="refresh-btn" class="action-icon" title="Refresh Now"><i
+                            class="fa-solid fa-arrow-rotate-right"></i></button>
+                </div>
+
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search ports..." id="search-input">
+                </div>
+
+                <div class="flex items-center space-x-1 header-actions">
+                    <button class="action-icon" id="btn-terminal" title="Terminal"><i
+                            class="fa-solid fa-terminal"></i></button>
+                    <button class="action-icon" id="btn-settings" title="Settings"><i
+                            class="fa-solid fa-gear"></i></button>
+                </div>
+            </header>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Port</th>
+                            <th>Active Process</th>
+                            <th>PID</th>
+                            <th>Type</th>
+                            <th class="text-right">Manage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ports-table-body"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Settings</h2>
+                <button class="text-slate-500 hover:text-white" onclick="closeSettings()"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Transparency Slider -->
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase">Transparency & Blur</label>
+                        <span class="text-[10px] text-slate-400" id="opacity-val">45%</span>
+                    </div>
+                    <input type="range" min="10" max="95" value="45" id="opacity-slider"
+                        oninput="updateOpacity(this.value)">
+                </div>
+
+                <!-- Auto Refresh Slider -->
+                <div class="border-t border-white/5 pt-6">
+                    <div class="flex justify-between mb-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase">Auto Refresh Interval</label>
+                        <span class="text-[10px] text-slate-400" id="refresh-val">5s</span>
+                    </div>
+                    <input type="range" min="1" max="60" value="5" id="refresh-slider"
+                        oninput="updateRefreshInterval(this.value)">
+                    <p class="text-[9px] text-slate-500 mt-1">Set to 1s for real-time or 60s for 1 minute intervals.</p>
+                </div>
+
+                <!-- Waybar Integration -->
+                <div class="border-t border-white/5 pt-6">
+                    <div class="flex items-center gap-2 mb-3">
+                        <label class="block text-xs font-bold text-slate-500 uppercase">Waybar Integration</label>
+                        <span
+                            class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[8px] font-bold uppercase tracking-tighter">Experimental</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-4 leading-relaxed">
+                        Automatically add the PortKiller module and styling to your Waybar.
+                        <span class="text-amber-500/80">Risky: This modifies your config files. Use at your own
+                            risk.</span>
+                    </p>
+                    <button class="btn-install" id="btn-setup-waybar">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        One-Click Install Module
+                    </button>
+                    <div id="waybar-msg" class="text-[10px] mt-2 text-center"></div>
+                </div>
+
+                <!-- About Section -->
+                <div class="border-t border-white/5 pt-6">
+                    <h3 class="text-sm font-bold mb-1">About PortKiller Pro</h3>
+                    <p class="text-[11px] text-slate-400">Created by: <b>Vahid E.</b> | <a href="https://vaha.net"
+                            target="_blank" class="text-blue-400">vaha.net</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Use standard Tauri V2 globals
+        const { invoke } = window.__TAURI__.core;
+        const { getCurrentWindow } = window.__TAURI__.window;
+        const appWindow = getCurrentWindow();
+
+        // Debugging logs to console to see if it's working
+        console.log("PortKiller UI Initialized");
+
+        // Fixed Window Controls for Linux
+        document.getElementById('win-close').onclick = async () => {
+            console.log("Closing...");
+            await appWindow.close();
+        };
+        document.getElementById('win-min').onclick = async () => {
+            console.log("Minimizing...");
+            await appWindow.minimize();
+        };
+        document.getElementById('win-max').onclick = async () => {
+            console.log("Toggling Maximize...");
+            // In v2, toggleMaximize is often best handled like this
+            if (await appWindow.isMaximized()) {
+                await appWindow.unmaximize();
+            } else {
+                await appWindow.maximize();
+            }
+        };
+
+        document.getElementById('btn-terminal').onclick = () => invoke('open_terminal');
+        document.getElementById('btn-settings').onclick = () => document.getElementById('settings-modal').classList.add('open');
+
+        function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
+
+        function updateOpacity(val) {
+            const opacity = val / 100;
+            document.documentElement.style.setProperty('--glass-bg', `rgba(20, 25, 35, ${opacity})`);
+            document.getElementById('protection-layer').style.background = `rgba(0, 0, 0, ${opacity * 0.4})`;
+            document.getElementById('opacity-val').innerText = val + '%';
+        }
+
+        let refreshInterval = 5000;
+        let refreshTimer = null;
+
+        function updateRefreshInterval(val) {
+            refreshInterval = val * 1000;
+            document.getElementById('refresh-val').innerText = val + 's';
+            startAutoRefresh();
+        }
+
+        function startAutoRefresh() {
+            if (refreshTimer) clearInterval(refreshTimer);
+            refreshTimer = setInterval(fetchPorts, refreshInterval);
+        }
+
+        async function doWaybarSetup() {
+            if (!confirm("EXPERIMENTAL FEATURE:\n\nThis will attempt to modify your ~/.config/waybar/config and style.css files.\nWhile it tries to be safe, it could potentially break your existing layout.\n\nProceed at your own risk?")) {
+                return;
+            }
+
+            const btn = document.getElementById('btn-setup-waybar');
+            const msg = document.getElementById('waybar-msg');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Installing...';
+            try {
+                const result = await invoke('setup_waybar');
+                msg.className = 'text-[10px] mt-2 text-center text-green-400';
+                msg.innerText = result;
+            } catch (err) {
+                msg.className = 'text-[10px] mt-2 text-center text-red-400';
+                msg.innerText = "Error: " + err;
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> One-Click Install Module';
+        }
+
+        document.getElementById('btn-setup-waybar').onclick = doWaybarSetup;
+
+        let allPorts = [];
+        let currentFilter = 'all';
+
+        async function fetchPorts() {
+            const refreshBtn = document.getElementById('refresh-btn');
+            refreshBtn.classList.add('loading');
+
+            try {
+                allPorts = await invoke('get_ports');
+                renderPorts();
+                document.getElementById('status-text').innerText = "Last sync: " + new Date().toLocaleTimeString();
+            } catch (err) {
+                console.error("Refresh failed:", err);
+                document.getElementById('status-text').innerText = "Sync Error!";
+            } finally {
+                setTimeout(() => refreshBtn.classList.remove('loading'), 1000);
+            }
+        }
+
+        function setFilter(type, el) {
+            currentFilter = type;
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+            renderPorts();
+        }
+
+        function renderPorts() {
+            const body = document.getElementById('ports-table-body');
+            const query = document.getElementById('search-input').value.toLowerCase();
+
+            let filtered = allPorts.filter(p => p.port.includes(query) || (p.process_name || '').toLowerCase().includes(query));
+
+            if (currentFilter === 'web') {
+                filtered = filtered.filter(p => [80, 443, 3000, 5000, 8000, 8080, 4200, 5173].includes(parseInt(p.port)));
+            } else if (currentFilter === 'database') {
+                filtered = filtered.filter(p => [3306, 5432, 27017, 6379, 1433].includes(parseInt(p.port)));
+            } else if (currentFilter === 'system') {
+                filtered = filtered.filter(p => parseInt(p.port) < 1024);
+            }
+
+            body.innerHTML = '';
+            filtered.forEach(p => {
+                const tr = document.createElement('tr');
+                const isSystem = parseInt(p.port) < 1024;
+                tr.innerHTML = `
+                    <td class="font-mono text-blue-400 font-bold">:${p.port}</td>
+                    <td class="font-medium truncate max-w-[120px]" title="${p.process_name}">${p.process_name || 'unknown'}</td>
+                    <td class="text-slate-500 font-mono text-xs">${p.pid || '-'}</td>
+                    <td><span class="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${isSystem ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'}">${isSystem ? 'System' : 'User App'}</span></td>
+                    <td class="text-right"><button class="action-icon hover:text-red-500" onclick="killProc(${p.pid})"><i class="fa-solid fa-circle-xmark"></i></button></td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        async function killProc(pid) {
+            if (!pid) return;
+            await invoke('kill_port', { pid });
+            fetchPorts();
+        }
+
+        document.getElementById('refresh-btn').onclick = fetchPorts;
+        document.getElementById('search-input').oninput = renderPorts;
+
+        fetchPorts();
+        startAutoRefresh();
+    </script>
+</body>
+
+</html>
