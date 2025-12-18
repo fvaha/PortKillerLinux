@@ -45,6 +45,7 @@
             border-radius: 12px;
             overflow: hidden;
             position: relative;
+            z-index: 10;
         }
 
         .text-protection {
@@ -121,6 +122,8 @@
             transition: 0.2s;
             cursor: pointer;
             -webkit-app-region: no-drag;
+            z-index: 50;
+            position: relative;
         }
 
         .linux-btn:hover {
@@ -323,8 +326,8 @@
 </head>
 
 <body>
-    <div class="text-protection" id="protection-layer"></div>
     <div class="app-window" id="app-window">
+        <div class="text-protection" id="protection-layer"></div>
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="title-controls">
@@ -461,14 +464,35 @@
     <script>
         const { invoke } = window.__TAURI__.core;
         const { getCurrentWindow } = window.__TAURI__.window;
-        const appWindow = getCurrentWindow();
 
-        document.getElementById('win-close').onclick = async () => await appWindow.close();
-        document.getElementById('win-min').onclick = async () => await appWindow.minimize();
-        document.getElementById('win-max').onclick = async () => {
-            if (await appWindow.isMaximized()) await appWindow.unmaximize();
-            else await appWindow.maximize();
-        };
+        async function initWindow() {
+            try {
+                const appWindow = getCurrentWindow();
+
+                document.getElementById('win-close').onclick = async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await appWindow.close();
+                };
+
+                document.getElementById('win-min').onclick = async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await appWindow.minimize();
+                };
+
+                document.getElementById('win-max').onclick = async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (await appWindow.isMaximized()) await appWindow.unmaximize();
+                    else await appWindow.maximize();
+                };
+            } catch (err) {
+                console.error("Failed to initialize window controls:", err);
+            }
+        }
+
+        initWindow();
 
         document.getElementById('btn-terminal').onclick = () => invoke('open_terminal');
         document.getElementById('btn-settings').onclick = () => document.getElementById('settings-modal').classList.add('open');
