@@ -23,16 +23,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Install system dependencies
         run: |
@@ -55,14 +50,11 @@ jobs:
           toolchain: stable
 
       - name: Install dependencies
-        run: pnpm install
-
-      - name: Verify pnpm installation
-        run: pnpm --version
+        run: npm install
 
       - name: Build Tauri application (DEB, RPM, AppImage)
         run: |
-          pnpm tauri build --bundles deb,rpm,appimage
+          npm run tauri build -- --bundles deb,rpm,appimage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
