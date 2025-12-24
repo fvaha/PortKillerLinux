@@ -54,9 +54,16 @@ if [ -z "$APPIMAGE" ]; then
         
         # Ensure app.png exists in AppDir root (required by appimagetool)
         if [ ! -f "$APPDIR/app.png" ]; then
-            if [ -f "$APPDIR/usr/share/icons/hicolor/128x128/apps/app.png" ]; then
+            # Try to use logo.png from project root first
+            if [ -f "$PROJECT_ROOT/logo.png" ]; then
+                cp "$PROJECT_ROOT/logo.png" "$APPDIR/app.png"
+                echo "Copied logo.png to AppDir root as app.png"
+            elif [ -f "$APPDIR/usr/share/icons/hicolor/128x128/apps/app.png" ]; then
                 cp "$APPDIR/usr/share/icons/hicolor/128x128/apps/app.png" "$APPDIR/app.png"
                 echo "Copied app.png to AppDir root"
+            elif [ -f "$APPDIR/usr/share/icons/hicolor/256x256/apps/app.png" ]; then
+                cp "$APPDIR/usr/share/icons/hicolor/256x256/apps/app.png" "$APPDIR/app.png"
+                echo "Copied app.png (256x256) to AppDir root"
             fi
         fi
         
