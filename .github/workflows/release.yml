@@ -58,6 +58,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Find built packages
+        run: |
+          echo "Searching for packages..."
+          find . -name "*.deb" -type f 2>/dev/null | head -5
+          find . -name "*.rpm" -type f 2>/dev/null | head -5
+          find . -name "*.AppImage" -type f 2>/dev/null | head -5
+          echo "Checking bundle directory..."
+          ls -la src-tauri/target/release/bundle/ 2>/dev/null || echo "Bundle directory not found"
+          ls -la src-tauri/target/release/bundle/deb/ 2>/dev/null || echo "DEB directory not found"
+          ls -la src-tauri/target/release/bundle/rpm/ 2>/dev/null || echo "RPM directory not found"
+          ls -la src-tauri/target/release/bundle/appimage/ 2>/dev/null || echo "AppImage directory not found"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -78,9 +90,9 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            src-tauri/target/release/bundle/deb/*.deb
-            src-tauri/target/release/bundle/rpm/*.rpm
-            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/**/*.deb
+            src-tauri/target/release/bundle/**/*.rpm
+            src-tauri/target/release/bundle/**/*.AppImage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -89,8 +101,8 @@ jobs:
         with:
           name: linux-packages-${{ github.ref_name }}
           path: |
-            src-tauri/target/release/bundle/deb/*.deb
-            src-tauri/target/release/bundle/rpm/*.rpm
-            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/**/*.deb
+            src-tauri/target/release/bundle/**/*.rpm
+            src-tauri/target/release/bundle/**/*.AppImage
           retention-days: 30
           if-no-files-found: warn
