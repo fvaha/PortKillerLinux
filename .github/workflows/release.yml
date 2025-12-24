@@ -61,15 +61,17 @@ jobs:
         run: pnpm --version
 
       - name: Build Tauri application (DEB, RPM, AppImage)
-        uses: tauri-apps/tauri-action@v0
+        run: |
+          pnpm tauri build --bundles deb,rpm,appimage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PATH: ${{ env.PATH }}:/usr/local/bin
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
         with:
-          projectPath: ./
-          tagName: ${{ github.ref_name }}
-          releaseName: 'PP Killer ${{ github.ref_name }}'
-          releaseBody: |
+          tag_name: ${{ github.ref_name }}
+          name: PP Killer ${{ github.ref_name }}
+          body: |
             ## PP Killer ${{ github.ref_name }}
             
             ### Downloads
@@ -81,9 +83,14 @@ jobs:
             - **DEB**: `sudo dpkg -i pp-killer_*.deb && sudo apt-get install -f`
             - **RPM**: `sudo rpm -i pp-killer-*.rpm` or `sudo dnf install pp-killer-*.rpm`
             - **AppImage**: `chmod +x PP-Killer-*.AppImage && ./PP-Killer-*.AppImage`
-          releaseDraft: false
+          draft: false
           prerelease: false
-          args: --bundles deb,rpm,appimage
+          files: |
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/rpm/*.rpm
+            src-tauri/target/release/bundle/appimage/*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts (backup)
         uses: actions/upload-artifact@v4
